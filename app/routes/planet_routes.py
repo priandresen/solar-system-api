@@ -85,6 +85,7 @@ def replace_planet(id):
     planet.moons=request_body['moons']
     db.session.commit()
 
+
     return Response(status=204, mimetype='application/json')
 
 @planets_bp.delete('/<id>')
@@ -93,4 +94,7 @@ def delete_planet_by_id(id):
     db.session.delete(planet)
     db.session.commit()
 
+    delete_response = ["Successfully deleted planet"]
+
+    # return make_response(response, 204)
     return Response(status=204, mimetype="application/json")
