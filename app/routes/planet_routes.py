@@ -1,33 +1,27 @@
 from flask import Blueprint, request, abort, make_response, Response
 from app.models.planet import Planet
+from app.routes.route_utilities import validate_model
 from app.db import db
 
-planets_bp = Blueprint("planets_bp", __name__, url_prefix="/planets")
+bp = Blueprint("planets_bp", __name__, url_prefix="/planets")
 
 
-@planets_bp.post('')
+@bp.post('')
 def create_planet():
     request_body = request.get_json()
-    
-    new_planet = Planet(
-        name=request_body['name'],
-        description=request_body['description'],
-        moons=request_body['moons']
-    )
+
+    try:
+        new_planet = Planet.from_dict(request_body)
+    except KeyboardInterrupt as error:
+        return {"error": f"Invalid request: missing: {error.args[0]}"}, 400
+        
 
     db.session.add(new_planet)
     db.session.commit()    
 
-    response = {
-        "id" : new_planet.id,
-        "name" : new_planet.name,
-        "description" : new_planet.description,
-        "moons" : new_planet.moons
-    }
+    return new_planet.to_dict(), 201
 
-    return response, 201
-
-@planets_bp.get('')
+@bp.get('')
 def get_all_planets():
 
     description_param = request.args.get("description")
@@ -46,51 +40,18 @@ def get_all_planets():
     planets = db.session.scalars(query)
 
 
-    planet_response = []
+    return [planet.to_dict() for planet in planets]
 
-    for planet in planets:
-        planet_response.append({
-        "id" : planet.id,
-        "name" : planet.name,
-        "description" : planet.description,
-        "moons" : planet.moons
-        })
 
-    return planet_response
-
-def validate_planet(id):
-    try:
-        id = int(id)
-    except ValueError:
-        response = {'message': f'planet id {id} is invalid'}
-        abort(make_response(response, 400))
-
-    query = db.select(Planet).where(Planet.id==id)
-    # planet = db.session.get(Planet, id) ??????
-    planet = db.session.scalar(query)
-
-    if not planet:
-        not_found = {'message': f'planet with id {id} not found'}
-        abort(make_response(not_found, 404))
-
-    return planet
-
-@planets_bp.get('/<id>')
+@bp.get('/<id>')
 def get_planet_by_id(id):
-    planet = validate_planet(id)
+    planet = validate_model(Planet,id)
 
-    response = {
-        "id" : planet.id,
-        "name" : planet.name,
-        "description" : planet.description,
-        "moons" : planet.moons
-    }
+    return planet.to_dict()
 
-    return response
-
-@planets_bp.put('/<id>')
+@bp.put('/<id>')
 def replace_planet(id):
-    planet = validate_planet(id)
+    planet = validate_model(Planet, id)
     
     request_body = request.get_json()
 
@@ -102,13 +63,13 @@ def replace_planet(id):
 
     return Response(status=204, mimetype='application/json')
 
-@planets_bp.delete('/<id>')
+@bp.delete('/<id>')
 def delete_planet_by_id(id):
-    planet = validate_planet(id)
+    planet = validate_model(Planet,id)
     db.session.delete(planet)
     db.session.commit()
 
-    delete_response = ["Successfully deleted planet"]
+    # delete_response = ["Successfully deleted planet"]
 
     # return make_response(response, 204)
     return Response(status=204, mimetype="application/json")
