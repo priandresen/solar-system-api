@@ -3,14 +3,14 @@ from app.models.moon import Moon
 from app.routes.route_utilities import get_model_with_filters, validate_model, create_model
 from app.db import db
 
-bp = Blueprint("planets_bp", __name__, url_prefix="/moons")
+bp = Blueprint("moons_bp", __name__, url_prefix="/moons")
 
 
 @bp.post('')
 def create_moons():
     request_body = request.get_json()
 
-    return create_model(Moon, request_body)
+    return create_model(Moon, request_body).to_dict()
 
 @bp.get('')
 def get_all_moons():

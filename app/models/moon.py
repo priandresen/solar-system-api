@@ -21,8 +21,9 @@ class Moon(db.Model):
             "id" : self.id,
             "size" : self.size,
             "description" : self.description,
-            "rings": bool(self.ring),
-            "planet": self.planet.name if self.planet_id else None
+            "ring": bool(self.ring),
+            "planet_id": self.planet.id if self.planet_id else None,
+            "planet_name": self.planet.name if self.planet_id else None
         }
     
     @classmethod

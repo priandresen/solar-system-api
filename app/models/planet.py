@@ -17,9 +17,10 @@ class Planet(db.Model):
     def to_dict(self):
         return {
             "id" : self.id,
-            "name" : self,
+            "name" : self.name,
             "description" : self.description,
-            "orbital_period" : self.orbital_period
+            "orbital_period" : self.orbital_period,
+            "num_of_moons" : len(self.moons)
         }
 
     @classmethod
