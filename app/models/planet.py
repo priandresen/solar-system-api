@@ -1,38 +1,35 @@
 from ..db import db
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+##### check with instructors where to put this >
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .moon import Moon
+##################################
 
 class Planet(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     name: Mapped[str]
     description: Mapped[str]
-    moons: Mapped[int]
+    orbital_period: Mapped[int]
+    moons: Mapped[list["Moon"]] = relationship(back_populates="planet")
+
 
     def to_dict(self):
         return {
             "id" : self.id,
             "name" : self,
             "description" : self.description,
-            "moons" : self.moons
+            "orbital_period" : self.orbital_period
         }
-    
+
     @classmethod
     def from_dict(cls, planet_data):
+
         return (cls(name=planet_data['name'],
                 description=planet_data['description'],
-                moons=planet_data['moons'])
+                orbital_period=planet_data['orbital_period'])
         )
 
 
 
 
-
-# planets = [
-#     Planet(1, 'Mercury', 'shiny, silver-white, and metallic.', 0),
-#     Planet(2, 'Earth', 'rocky, blue-and-green sphere', 1),
-#     Planet(3, 'Jupiter', 'colorful cloud bands, which are a mix of red, brown, yellow, and white', 95),
-#     Planet(4, 'Mars', 'rocky, desert-like world with a, dry surface', 2),
-#     Planet(5, 'Saturn', 'a pale, yellowish-brown gas giant with prominent rings', 146),
-#     Planet(6, 'Uranus', 'gaseous cyan-coloured ice giant', 28),   
-#     Planet(7, 'Neptune', 'deep, blue gas giant planet with a dynamic atmosphere', 14),
-#     Planet(8, 'Venus', 'a brilliant white or yellowish-white sphere', 0)
-# ]

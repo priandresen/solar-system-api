@@ -1,3 +1,4 @@
+from pyexpat import model
 from flask import abort, make_response
 from app.db import db
 
@@ -8,7 +9,6 @@ def validate_model(cls, model_id):
             invalid = {"message": f"{cls.__name__} id {model_id} is invalid. Must be an integer"}
             abort(make_response(invalid, 400))
 
-
     query = db.select(cls).where(cls.id == model_id)
     model = db.session.scalar(query)
 
@@ -17,3 +17,29 @@ def validate_model(cls, model_id):
         abort(make_response(not_found, 404))
 
     return model
+
+def create_model(cls, data):
+
+    try:
+        new_model = cls.from_dict(data)
+    except Exception as e:
+        response = {"message": f"Invalid request: missing {e.args[0]}"}
+        abort(make_response(response, 400))
+        
+    db.session.add(new_model)
+    db.session.commit()
+    
+    return new_model
+
+def get_model_with_filters(cls, filters):
+    query = db.select(cls)
+
+    if filters:
+        for attribute, value in filters.items():
+            if hasattr(cls, attribute):
+                query = query.where(getattr(cls, attribute).ilike(f"%{value}%"))
+
+    models = db.session.scalars(query.order_by(cls.id))
+    models_response = [model.to_dict() for model in models]
+
+    return models_response  

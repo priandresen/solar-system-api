@@ -38,7 +38,7 @@ def one_planet(app):
     planet = Planet(
         name="Earth", 
         description="rocky, blue-and-green sphere", 
-        moons=1
+        orbital_period=365
     )
     db.session.add(planet)
     db.session.commit()
